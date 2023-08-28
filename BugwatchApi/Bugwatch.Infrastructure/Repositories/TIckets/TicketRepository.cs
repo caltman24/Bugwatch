@@ -131,7 +131,7 @@ public class TicketRepository : ITicketRepository
         });
     }
 
-    public async Task UpdateAsync(Guid ticketId, BasicTicket updatedTicket, TicketHistory? ticketHistory)
+    public async Task UpdateAsync(Guid ticketId, BasicTicket updatedTicket)
     {
         await using var conn = new NpgsqlConnection(_connectionString);
 
@@ -146,15 +146,6 @@ public class TicketRepository : ITicketRepository
                 updated_at = @UpdatedAt
             WHERE ticket.id = @ticketId;";
 
-        if (ticketHistory != null)
-            sql += @"
-                INSERT INTO ticket_history (id, ticket_id, message, 
-                                            event_name, old_value, new_value, 
-                                            created_at, updated_at) 
-                VALUES (@HistoryId, @ticketId, @HistoryMessage, 
-                        @EventName, @OldValue, @NewValue, 
-                        @CreatedAt, @UpdatedAt);";
-
         await conn.ExecuteAsync(sql, new
         {
             updatedTicket.DeveloperId,
@@ -165,16 +156,10 @@ public class TicketRepository : ITicketRepository
             updatedTicket.Priority,
             updatedTicket.UpdatedAt,
             ticketId,
-            HistoryId = ticketHistory?.Id,
-            HistoryMessage = ticketHistory?.Message,
-            ticketHistory?.EventName,
-            ticketHistory?.OldValue,
-            ticketHistory?.NewValue,
-            ticketHistory?.CreatedAt
         });
     }
 
-    public async Task UpdateStatusAsync(Guid ticketId, string status, TicketHistory? ticketHistory)
+    public async Task UpdateStatusAsync(Guid ticketId, string status, TicketHistory? ticketHistory, string authId)
     {
         await using var conn = new NpgsqlConnection(_connectionString);
 
@@ -187,10 +172,13 @@ public class TicketRepository : ITicketRepository
             sql += @"
                 INSERT INTO ticket_history (id, ticket_id, message, 
                                             event_name, old_value, new_value, 
-                                            created_at, updated_at) 
-                VALUES (@HistoryId, @ticketId, @HistoryMessage, 
+                                            created_at, updated_at, team_member_id) 
+                SELECT @HistoryId, @Id, @HistoryMessage, 
                         @EventName, @OldValue, @NewValue, 
-                        @CreatedAt, @UpdatedAt);";
+                        @CreatedAt, @UpdatedAt, tm.id
+                FROM team_member tm
+                INNER JOIN ""user"" u on tm.user_id = u.id
+                WHERE u.auth_id = @authId;";
 
         await conn.ExecuteAsync(sql, new
         {

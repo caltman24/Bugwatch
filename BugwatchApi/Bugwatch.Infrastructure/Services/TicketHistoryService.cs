@@ -26,6 +26,8 @@ public class TicketHistoryService : ITicketHistoryService
 
     public async Task AddHistoryToTicketAsync(BasicTicket newTicket, string authId)
     {
+        throw new NotImplementedException();
+        
         ICollection<TicketHistory> ticketHistories = new List<TicketHistory>();
 
         var oldTicket = await _ticketRepository.GetByIdAsync(newTicket.Id);

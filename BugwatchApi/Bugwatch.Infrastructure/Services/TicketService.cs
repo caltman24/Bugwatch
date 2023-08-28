@@ -14,9 +14,11 @@ public class TicketService : ITicketService
         _ticketRepository = ticketRepository;
     }
 
-    public Task UpdateWithHistoryAsync(Guid ticketId, BasicTicket ticket, string authId)
+    public async Task UpdateWithHistoryAsync(Guid ticketId, BasicTicket ticket, string authId)
     {
-        throw new NotImplementedException();
+        await _ticketHistoryService.AddHistoryToTicketAsync(ticket, authId);
+
+        await _ticketRepository.UpdateAsync(ticketId, ticket);
     }
 
     public async Task CreateWithHistoryAsync(BasicTicket newTicket, string authId)

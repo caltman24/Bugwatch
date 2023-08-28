@@ -84,10 +84,10 @@ public static class TicketModule
             return TypedResults.CreatedAtRoute(newTicket, "GetTicketById", new { ticketId = newTicket.Id });
         }).WithMemberRole(UserRoles.Admin, UserRoles.ProjectManager, UserRoles.Submitter);
 
-        // TODO: Update ticket
+        // TODO: Finish update ticket
         ticketGroup.MapPut("/{ticketId:Guid}", async (
             Guid ticketId,
-            ITicketRepository ticketRepository,
+            ITicketService ticketService,
             UpdateTicketRequest updateTicketRequest) =>
         {
             var updatedTicket = new BasicTicket
@@ -99,10 +99,10 @@ public static class TicketModule
                 Type = updateTicketRequest.Type,
                 DeveloperId = updateTicketRequest.DeveloperId
             };
-
-            // TODO: Fluent way to distinguish what changed when updating the ticket.
-            // TODO: Add TicketHistory
+            
+            // await ticketService.UpdateWithHistoryAsync(ticketId, updatedTicket, "");
         });
+
         // TODO: Update ticket status
         // TODO: Assign developer to ticket
 
