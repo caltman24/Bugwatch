@@ -21,13 +21,11 @@ public class TicketHistoryService : ITicketHistoryService
 
     public TicketHistory CreateNewInstance(Guid ticketId)
     {
-        return _ticketHistoryFactory.CreateNewEvent(ticketId, TicketHistoryEvents.Created, null, null);
+        return _ticketHistoryFactory.CreateFromEvent(ticketId, TicketHistoryEvents.Created, null, null);
     }
 
     public async Task AddHistoryToTicketAsync(BasicTicket newTicket, string authId)
     {
-        throw new NotImplementedException();
-        
         ICollection<TicketHistory> ticketHistories = new List<TicketHistory>();
 
         var oldTicket = await _ticketRepository.GetByIdAsync(newTicket.Id);
@@ -49,21 +47,21 @@ public class TicketHistoryService : ITicketHistoryService
         }
 
         if (oldTicket.Status != newTicket.Status)
-            ticketHistories.Add(_ticketHistoryFactory.CreateNewEvent(
+            ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
                 newTicket.Id,
                 TicketHistoryEvents.NewStatus,
                 oldTicket.Status,
                 newTicket.Status));
 
         if (oldTicket.Type != newTicket.Type)
-            ticketHistories.Add(_ticketHistoryFactory.CreateNewEvent(
+            ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
                 newTicket.Id,
                 TicketHistoryEvents.NewType,
                 oldTicket.Type,
                 newTicket.Type));
 
         if (oldTicket.DeveloperId != newTicket.DeveloperId)
-            ticketHistories.Add(_ticketHistoryFactory.CreateNewEvent(
+            ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
                 newTicket.Id,
                 TicketHistoryEvents.NewDev,
                 oldTicket.DeveloperId.ToString(),

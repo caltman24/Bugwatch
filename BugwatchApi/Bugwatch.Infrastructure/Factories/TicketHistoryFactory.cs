@@ -6,7 +6,7 @@ namespace Bugwatch.Infrastructure.Factories;
 
 public class TicketHistoryFactory : ITicketHistoryFactory
 {
-    public TicketHistory CreateNewEvent(Guid ticketId, string eventName, string? oldValue = null,
+    public TicketHistory CreateFromEvent(Guid ticketId, string eventName, string? oldValue = null,
         string? newValue = null)
     {
         return new TicketHistory

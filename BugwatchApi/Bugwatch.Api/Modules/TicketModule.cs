@@ -33,19 +33,19 @@ public static class TicketModule
 
             var historyRequests = new List<GetTicketHistoryRequest>();
 
-            foreach (var h in ticket?.TicketHistory!)
+            foreach (var history in ticket?.TicketHistory!)
                 historyRequests.Add(new GetTicketHistoryRequest(
-                    h.Id,
-                    h.TicketId,
-                    h.Message,
-                    h.EventName,
-                    h.OldValue,
-                    h.NewValue,
+                    history.Id,
+                    history.TicketId,
+                    history.Message,
+                    history.EventName,
+                    history.OldValue,
+                    history.NewValue,
                     new TeamMemberInfo(
-                        h.TeamMember.Id,
-                        h.TeamMember.Name,
-                        h.TeamMember.Username,
-                        h.TeamMember.Role)));
+                        history.TeamMember.Id,
+                        history.TeamMember.Name,
+                        history.TeamMember.Username,
+                        history.TeamMember.Role)));
 
             return TypedResults.Ok(new GetTicketRequest(
                 ticket.SubmitterId,
