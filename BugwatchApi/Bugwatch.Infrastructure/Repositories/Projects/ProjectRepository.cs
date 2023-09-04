@@ -1,6 +1,7 @@
 ﻿using Bugwatch.Application.Aggregates;
 using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
+using Bugwatch.Infrastructure.Context;
 using Dapper;
 using Npgsql;
 
@@ -8,16 +9,16 @@ namespace Bugwatch.Infrastructure.Repositories.Projects;
 
 public class ProjectRepository : IProjectRepository
 {
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext;
 
-    public ProjectRepository(string connectionString)
+    public ProjectRepository(DapperContext dapperContext)
     {
-        _connectionString = connectionString;
+        _dapperContext = dapperContext;
     }
 
     public async Task<IQueryable<BasicProject>> GetAllAsync(string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         return (await conn.QueryAsync<BasicProject>(@"
             SELECT p.id, p.team_id, p.title, 
@@ -33,7 +34,7 @@ public class ProjectRepository : IProjectRepository
 
     public async Task<Project?> GetByIdAsync(Guid projectId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         /*
          * Multi-Mapping (One to Many)
@@ -70,7 +71,7 @@ public class ProjectRepository : IProjectRepository
 
     public async Task InsertAsync(BasicProject project)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             INSERT INTO project (id, team_id, title, 
@@ -97,7 +98,7 @@ public class ProjectRepository : IProjectRepository
 
     public async Task UpdateAsync(Guid projectId, BasicProject updated)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             UPDATE project SET
@@ -125,7 +126,7 @@ public class ProjectRepository : IProjectRepository
 
     public async Task DeleteAsync(Guid projectId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"DELETE FROM project p WHERE p.id = @projectId";
 

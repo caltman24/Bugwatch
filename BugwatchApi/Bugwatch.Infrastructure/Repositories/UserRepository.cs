@@ -1,4 +1,5 @@
 ﻿using Bugwatch.Application.Entities;
+using Bugwatch.Infrastructure.Context;
 using Dapper;
 using Npgsql;
 
@@ -6,16 +7,16 @@ namespace Bugwatch.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext;
 
-    public UserRepository(string connectionString)
+    public UserRepository(DapperContext dapperContext)
     {
-        _connectionString = connectionString;
+        _dapperContext = dapperContext;
     }
 
     public async Task Add(User newUser)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             INSERT INTO ""user"" (id, auth_id, created_at, updated_at, email, name)
@@ -34,7 +35,7 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> UserExists(string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"SELECT EXISTS (SELECT 1 FROM ""user"" u WHERE u.auth_id = @authId);";
 

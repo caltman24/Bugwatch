@@ -1,5 +1,6 @@
 ﻿using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
+using Bugwatch.Infrastructure.Context;
 using Dapper;
 using Npgsql;
 
@@ -7,16 +8,16 @@ namespace Bugwatch.Infrastructure.Repositories;
 
 public class TeamRepository : ITeamRepository
 {
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext;
 
-    public TeamRepository(string connectionString)
+    public TeamRepository(DapperContext dapperContext)
     {
-        _connectionString = connectionString;
+        _dapperContext = dapperContext;
     }
 
     public async Task<Team?> GetByAuthIdAsync(string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             SELECT DISTINCT t.* FROM ""user"" u
@@ -29,7 +30,7 @@ public class TeamRepository : ITeamRepository
 
     public async Task<Team?> GetByUserIdAsync(Guid userId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             SELECT DISTINCT t.* FROM team_member tm
@@ -41,7 +42,7 @@ public class TeamRepository : ITeamRepository
 
     public async Task InsertAsync(Team team)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             INSERT INTO team (id, creator_id, created_at, updated_at, name) 
@@ -59,7 +60,7 @@ public class TeamRepository : ITeamRepository
 
     public async Task UpdateAsync(Guid teamId, string name)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             UPDATE team SET
@@ -76,7 +77,7 @@ public class TeamRepository : ITeamRepository
 
     public async Task DeleteAsync(Guid teamId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"DELETE from team t WHERE t.id = @teamId;";
 

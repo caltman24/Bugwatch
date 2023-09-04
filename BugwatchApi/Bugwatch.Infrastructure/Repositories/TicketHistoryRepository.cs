@@ -1,5 +1,6 @@
 using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
+using Bugwatch.Infrastructure.Context;
 using Dapper;
 using Npgsql;
 
@@ -7,17 +8,17 @@ namespace Bugwatch.Infrastructure.Repositories;
 
 public class TicketHistoryRepository : ITicketHistoryRepository
 {
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext;
 
-    public TicketHistoryRepository(string connectionString)
+    public TicketHistoryRepository(DapperContext dapperContext)
     {
-        _connectionString = connectionString;
+        _dapperContext = dapperContext;
     }
 
     // TODO: FIXME
     public async Task InsertManyAsync(IEnumerable<TicketHistory> ticketHistories, string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"INSERT INTO ticket_history (id, ticket_id, team_member_id, message, 
                                             event_name, old_value, new_value, 
@@ -29,7 +30,7 @@ public class TicketHistoryRepository : ITicketHistoryRepository
 
     public async Task InsertAsync(TicketHistory ticketHistory)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"INSERT INTO ticket_history (id, ticket_id, team_member_id, message, 
                                             event_name, old_value, new_value, 

@@ -1,20 +1,21 @@
-﻿using Dapper;
+﻿using Bugwatch.Infrastructure.Context;
+using Dapper;
 using Npgsql;
 
 namespace Bugwatch.Infrastructure.Repositories;
 
 public class TeamMemberRepository : ITeamMemberRepository
 {
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext;
 
-    public TeamMemberRepository(string connectionString)
+    public TeamMemberRepository( DapperContext dapperContext)
     {
-        _connectionString = connectionString;
+        _dapperContext = dapperContext;
     }
 
     public async Task<string?> GetRoleAsync(string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             SELECT tm.role FROM team_member tm

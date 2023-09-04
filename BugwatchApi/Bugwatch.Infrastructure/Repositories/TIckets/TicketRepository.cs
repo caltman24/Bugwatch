@@ -3,6 +3,7 @@ using Bugwatch.Application.Aggregates;
 using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
 using Bugwatch.Application.ValueObjects;
+using Bugwatch.Infrastructure.Context;
 using Dapper;
 using Npgsql;
 
@@ -10,17 +11,17 @@ namespace Bugwatch.Infrastructure.Repositories.Tickets;
 
 public class TicketRepository : ITicketRepository
 {
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext;
 
-    public TicketRepository(string connectionString)
+    public TicketRepository(DapperContext dapperContext)
     {
-        _connectionString = connectionString;
+        _dapperContext = dapperContext;
     }
 
     public async Task<IQueryable<BasicTicket>> GetAllAsync(string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
-
+        using var conn = _dapperContext.CreateConnection();
+        
         const string sql = @"
             SELECT ticket.* FROM ticket
                 INNER JOIN project p on p.id = ticket.project_id
@@ -34,7 +35,7 @@ public class TicketRepository : ITicketRepository
 
     public async Task<IQueryable<BasicTicket>> GetProjectTicketsAsync(Guid projectId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             SELECT t.* FROM ticket t 
@@ -45,7 +46,7 @@ public class TicketRepository : ITicketRepository
 
     public async Task<Ticket?> GetByIdAsync(Guid ticketId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             SELECT t.*, tc.*, th.id, th.ticket_id, th.event_name, th.message,
@@ -82,7 +83,7 @@ public class TicketRepository : ITicketRepository
 
     public async Task InsertAsync(BasicTicket newTicket, TicketHistory? ticketHistory, string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         var sb = new StringBuilder(@"");
 
@@ -133,7 +134,7 @@ public class TicketRepository : ITicketRepository
 
     public async Task UpdateAsync(Guid ticketId, BasicTicket updatedTicket)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         var sql = @"
             UPDATE ticket SET
@@ -161,7 +162,7 @@ public class TicketRepository : ITicketRepository
 
     public async Task UpdateStatusAsync(Guid ticketId, string status, TicketHistory? ticketHistory, string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         var sql = @"
             UPDATE ticket SET
@@ -196,7 +197,7 @@ public class TicketRepository : ITicketRepository
 
     public async Task DeleteAsync(Guid ticketId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             DELETE FROM ticket

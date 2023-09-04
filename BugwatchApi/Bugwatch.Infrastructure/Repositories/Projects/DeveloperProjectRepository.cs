@@ -1,5 +1,6 @@
 ﻿using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
+using Bugwatch.Infrastructure.Context;
 using Dapper;
 using Npgsql;
 
@@ -7,16 +8,16 @@ namespace Bugwatch.Infrastructure.Repositories.Projects;
 
 public class DeveloperProjectRepository : IRoleProjectRepository
 {
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext;
 
-    public DeveloperProjectRepository(string connectionString)
+    public DeveloperProjectRepository(DapperContext dapperContext)
     {
-        _connectionString = connectionString;
+        _dapperContext = dapperContext;
     }
 
     public async Task<IQueryable<BasicProject>> GetProjectsAsync(string authId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         return (await conn.QueryAsync<BasicProject>(@"
             SELECT DISTINCT p.id, p.team_id, p.title, 

@@ -1,4 +1,5 @@
 ﻿using Bugwatch.Application.Entities;
+using Bugwatch.Infrastructure.Context;
 using Dapper;
 using Npgsql;
 
@@ -6,16 +7,16 @@ namespace Bugwatch.Infrastructure.Repositories;
 
 public class CommentRepository : ICommentRepository
 {
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext;
 
-    public CommentRepository(string connectionString)
+    public CommentRepository(DapperContext dapperContext)
     {
-        _connectionString = connectionString;
+        _dapperContext = dapperContext;
     }
 
     public async Task<TicketComment?> GetByIdAsync(Guid commentId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             SELECT tc.* FROM ticket_comment tc
@@ -26,7 +27,7 @@ public class CommentRepository : ICommentRepository
 
     public async Task AddAsync(TicketComment newTicketComment)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"
             INSERT INTO ticket_comment (id, creator_id, description, created_at, updated_at, ticket_id)
@@ -45,7 +46,7 @@ public class CommentRepository : ICommentRepository
 
     public async Task DeleteAsync(Guid commentId)
     {
-        await using var conn = new NpgsqlConnection(_connectionString);
+        using var conn = _dapperContext.CreateConnection();
 
         const string sql = "DELETE FROM ticket_comment tc WHERE tc.id = @commentId;";
 
