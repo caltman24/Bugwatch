@@ -13,5 +13,5 @@ public sealed class DapperContext
         _configuration = configuration;
     }
 
-    public IDbConnection CreateConnection() => new NpgsqlConnection(_configuration.GetConnectionString("Cosmos"));
+    public IDbConnection CreateConnection() => new NpgsqlConnection(_configuration.GetConnectionString("Development"));
 }
