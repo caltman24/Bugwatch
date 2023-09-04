@@ -1,5 +1,4 @@
 using Bugwatch.Application.Entities;
-using Bugwatch.Application.Factories;
 using Bugwatch.Application.Interfaces;
 
 namespace Bugwatch.Infrastructure.Factories;

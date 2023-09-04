@@ -6,7 +6,7 @@ using Bugwatch.Application.ValueObjects;
 using Dapper;
 using Npgsql;
 
-namespace Bugwatch.Application.Repositories.Tickets;
+namespace Bugwatch.Infrastructure.Repositories.Tickets;
 
 public class TicketRepository : ITicketRepository
 {

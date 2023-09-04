@@ -1,4 +1,4 @@
-﻿using Bugwatch.Application.Repositories;
+﻿using Bugwatch.Infrastructure.Repositories;
 
 namespace Bugwatch.Api.Filters;
 

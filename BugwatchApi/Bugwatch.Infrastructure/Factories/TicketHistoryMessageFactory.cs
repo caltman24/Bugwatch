@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Bugwatch.Application.Constants;
 
-namespace Bugwatch.Application.Factories;
+namespace Bugwatch.Infrastructure.Factories;
 
 public static class TicketHistoryMessageFactory
 {

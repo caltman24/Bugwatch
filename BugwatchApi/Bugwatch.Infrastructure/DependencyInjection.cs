@@ -1,10 +1,10 @@
 ﻿using Bugwatch.Application;
 using Bugwatch.Application.Constants;
 using Bugwatch.Application.Interfaces;
-using Bugwatch.Application.Repositories;
-using Bugwatch.Application.Repositories.Projects;
-using Bugwatch.Application.Repositories.Tickets;
 using Bugwatch.Infrastructure.Factories;
+using Bugwatch.Infrastructure.Repositories;
+using Bugwatch.Infrastructure.Repositories.Projects;
+using Bugwatch.Infrastructure.Repositories.Tickets;
 using Bugwatch.Infrastructure.Services;
 using Dapper;
 using Microsoft.Extensions.Configuration;

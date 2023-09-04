@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using Npgsql;
 
-namespace Bugwatch.Application.Repositories;
+namespace Bugwatch.Infrastructure.Repositories;
 
 public class TeamMemberRepository : ITeamMemberRepository
 {

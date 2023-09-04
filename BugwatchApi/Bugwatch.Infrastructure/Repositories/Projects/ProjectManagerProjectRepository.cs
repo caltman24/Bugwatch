@@ -3,7 +3,7 @@ using Bugwatch.Application.Interfaces;
 using Dapper;
 using Npgsql;
 
-namespace Bugwatch.Application.Repositories.Projects;
+namespace Bugwatch.Infrastructure.Repositories.Projects;
 
 public class ProjectManagerProjectRepository : IRoleProjectRepository
 {

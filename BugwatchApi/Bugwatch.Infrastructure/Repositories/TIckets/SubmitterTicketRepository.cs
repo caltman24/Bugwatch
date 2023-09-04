@@ -3,7 +3,7 @@ using Bugwatch.Application.Interfaces;
 using Dapper;
 using Npgsql;
 
-namespace Bugwatch.Application.Repositories.Tickets;
+namespace Bugwatch.Infrastructure.Repositories.Tickets;
 
 public class SubmitterTicketRepository : IRoleTicketRepository
 {

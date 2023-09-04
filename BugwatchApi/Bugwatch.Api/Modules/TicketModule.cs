@@ -1,7 +1,6 @@
 using Bugwatch.Api.Filters;
 using Bugwatch.Application.Constants;
 using Bugwatch.Application.Entities;
-using Bugwatch.Application.Factories;
 using Bugwatch.Application.Interfaces;
 using Bugwatch.Application.ValueObjects;
 using Bugwatch.Contracts;
