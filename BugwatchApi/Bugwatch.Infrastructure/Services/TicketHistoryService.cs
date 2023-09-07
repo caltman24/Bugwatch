@@ -25,24 +25,42 @@ public class TicketHistoryService : ITicketHistoryService
 
     public async Task AddHistoryToTicketAsync(BasicTicket newTicket, string authId)
     {
-        ICollection<TicketHistory> ticketHistories = new List<TicketHistory>();
-
         var oldTicket = await _ticketRepository.GetByIdAsync(newTicket.Id);
 
         if (oldTicket == null)
+        {
             // New ticket created
+            await _ticketHistoryRepository.InsertAsync(CreateNewInstance(newTicket.Id));
             return;
+        }
+        
+        ICollection<TicketHistory> ticketHistories = new List<TicketHistory>();
 
         if (oldTicket.Title != newTicket.Title)
         {
+            ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
+                newTicket.Id,
+                TicketHistoryEvents.NewTitle,
+                oldTicket.Status,
+                newTicket.Status));
         }
 
         if (oldTicket.Description != newTicket.Description)
         {
+            ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
+                newTicket.Id,
+                TicketHistoryEvents.NewDescription,
+                oldTicket.Status,
+                newTicket.Status));
         }
 
         if (oldTicket.Priority != newTicket.Priority)
         {
+            ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
+                newTicket.Id,
+                TicketHistoryEvents.NewPriority,
+                oldTicket.Status,
+                newTicket.Status));
         }
 
         if (oldTicket.Status != newTicket.Status)
