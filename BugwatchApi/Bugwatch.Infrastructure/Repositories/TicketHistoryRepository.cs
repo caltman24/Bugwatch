@@ -18,6 +18,8 @@ public class TicketHistoryRepository : ITicketHistoryRepository
     // TODO: FIXME
     public async Task InsertManyAsync(IEnumerable<TicketHistory> ticketHistories, string authId)
     {
+        if (!ticketHistories.Any()) return;
+
         using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"INSERT INTO ticket_history (id, ticket_id, team_member_id, message, 
