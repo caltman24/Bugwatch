@@ -9,11 +9,10 @@ public interface ITicketRepository
 
     Task<IQueryable<BasicTicket>> GetProjectTicketsAsync(Guid projectId);
 
-    // Task<IQueryable<BasicTicket>> GetDeveloperTicketsAsync(string authId);
-    // Task<IQueryable<BasicTicket>> GetSubmitterTicketsAsync(string authId);
     Task<Ticket?> GetByIdAsync(Guid ticketId);
     Task InsertAsync(BasicTicket newTicket, TicketHistory? ticketHistory, string authId);
     Task UpdateAsync(Guid ticketId, BasicTicket updatedTicket);
     Task UpdateStatusAsync(Guid ticketId, string status, TicketHistory? ticketHistory, string authId);
+    Task UpdateDeveloperAsync(Guid ticketId, Guid developerId);
     Task DeleteAsync(Guid ticketId);
 }

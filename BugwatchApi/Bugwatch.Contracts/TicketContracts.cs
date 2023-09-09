@@ -1,6 +1,9 @@
 ﻿namespace Bugwatch.Contracts;
 
+public abstract record TicketRequest(string Status, string Priority, string Type);
+
 public record GetTicketRequest(
+    Guid Id,
     Guid SubmitterId,
     Guid? DeveloperId,
     Guid ProjectId,
@@ -9,7 +12,9 @@ public record GetTicketRequest(
     string Priority,
     string Type,
     string Status,
-    IEnumerable<GetTicketHistoryRequest> TicketHistory);
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    IEnumerable<GetTicketHistoryRequest> TicketHistory) : TicketRequest(Status, Priority, Type);
 
 public record NewTicketRequest(
     Guid SubmitterId,
@@ -19,17 +24,15 @@ public record NewTicketRequest(
     string? Description,
     string Priority,
     string Type,
-    string Status);
+    string Status) : TicketRequest(Status, Priority, Type);
 
 public record UpdateTicketStatusRequest(
     Guid TicketId,
     string Status);
 
 public record UpdateTicketRequest(
-    Guid Id,
     Guid? DeveloperId,
     string Title,
     string? Description,
     string Priority,
-    string Type,
-    string Status);
+    string Type, string Status) : TicketRequest(Status, Priority, Type);

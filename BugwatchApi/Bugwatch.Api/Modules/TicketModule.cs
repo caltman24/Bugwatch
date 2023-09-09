@@ -1,9 +1,11 @@
+using System.Diagnostics.Eventing.Reader;
 using Bugwatch.Api.Filters;
 using Bugwatch.Application.Constants;
 using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
 using Bugwatch.Application.ValueObjects;
 using Bugwatch.Contracts;
+using Bugwatch.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,6 +49,7 @@ public static class TicketModule
                         history.TeamMember.Role)));
 
             return TypedResults.Ok(new GetTicketRequest(
+                ticket.Id,
                 ticket.SubmitterId,
                 ticket.DeveloperId,
                 ticket.ProjectId,
@@ -55,14 +58,15 @@ public static class TicketModule
                 ticket.Priority,
                 ticket.Status,
                 ticket.Type,
+                ticket.CreatedAt,
+                ticket.UpdatedAt,
                 historyRequests.AsEnumerable()));
         }).WithName("GetTicketById");
 
         ticketGroup.MapPost("/", async (
-            [FromBody] NewTicketRequest newTicketRequest,
             [FromQuery] string authId,
-            ITicketService ticketService,
-            ITicketHistoryFactory ticketHistoryFactory) =>
+            [FromBody] NewTicketRequest newTicketRequest,
+            ITicketService ticketService) =>
         {
             var newTicket = new BasicTicket
             {
@@ -81,12 +85,11 @@ public static class TicketModule
             await ticketService.CreateWithHistoryAsync(newTicket, authId);
 
             return TypedResults.CreatedAtRoute(newTicket, "GetTicketById", new { ticketId = newTicket.Id });
-        }).WithMemberRole(UserRoles.Admin, UserRoles.ProjectManager, UserRoles.Submitter);
+        }).AddEndpointFilter<TicketValidationFilter>().WithMemberRole(UserRoles.Admin, UserRoles.ProjectManager, UserRoles.Submitter);
 
-        // TODO: Remove authId from query param
         ticketGroup.MapPut("/{ticketId:Guid}", async (
-            Guid ticketId,
             [FromQuery] string authId,
+            Guid ticketId,
             ITicketService ticketService,
             UpdateTicketRequest updateTicketRequest) =>
         {
@@ -96,15 +99,30 @@ public static class TicketModule
                 Priority = updateTicketRequest.Priority,
                 Status = updateTicketRequest.Status,
                 Title = updateTicketRequest.Title,
+                Description = updateTicketRequest.Description,
                 Type = updateTicketRequest.Type,
                 DeveloperId = updateTicketRequest.DeveloperId
             };
-            
-            await ticketService.UpdateWithHistoryAsync(ticketId, updatedTicket, authId);
-        });
 
-        // TODO: Update ticket status
-        // TODO: Assign developer to ticket
+            await ticketService.UpdateWithHistoryAsync(ticketId, updatedTicket, authId);
+
+            return TypedResults.NoContent();
+        }).WithExistingUser().AddEndpointFilter<TicketValidationFilter>();
+
+        ticketGroup.MapPut("/assign/{ticketId:Guid}", async Task<Results<BadRequest<string>, NoContent>>(
+            [FromQuery]Guid developerId,
+            Guid ticketId,
+            ITeamMemberRepository teamMemberRepository,
+            ITicketRepository ticketRepository) =>
+        {
+            var isDeveloper = await teamMemberRepository.ValidateRoleAsync(developerId, UserRoles.Developer);
+
+            if (!isDeveloper) return TypedResults.BadRequest("Team member is not a developer");
+
+            await ticketRepository.UpdateDeveloperAsync(ticketId, developerId);
+
+            return TypedResults.NoContent();
+        });
 
         // TODO: If role is project manager, check if the ticket is apart of their project
         ticketGroup.MapDelete("/{ticketId:Guid}", async (

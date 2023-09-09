@@ -1,4 +1,5 @@
 ﻿using Bugwatch.Application.Entities;
+using Bugwatch.Application.ValueObjects;
 
 namespace Bugwatch.Application.Interfaces;
 

@@ -21,7 +21,7 @@ public class TicketRepository : ITicketRepository
     public async Task<IQueryable<BasicTicket>> GetAllAsync(string authId)
     {
         using var conn = _dapperContext.CreateConnection();
-        
+
         const string sql = @"
             SELECT ticket.* FROM ticket
                 INNER JOIN project p on p.id = ticket.project_id
@@ -193,6 +193,18 @@ public class TicketRepository : ITicketRepository
             ticketHistory?.CreatedAt,
             ticketHistory?.UpdatedAt
         });
+    }
+
+    public async Task UpdateDeveloperAsync(Guid ticketId, Guid developerId)
+    {
+        using var conn = _dapperContext.CreateConnection();
+
+        const string sql = @"
+            UPDATE ticket set 
+               developer_id = @developerId
+            WHERE id = @ticketId;";
+
+        await conn.ExecuteAsync(sql, new { ticketId, developerId });
     }
 
     public async Task DeleteAsync(Guid ticketId)

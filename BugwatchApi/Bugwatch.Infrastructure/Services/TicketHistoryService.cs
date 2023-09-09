@@ -1,6 +1,7 @@
 using Bugwatch.Application.Constants;
 using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
+using Bugwatch.Infrastructure.Repositories;
 
 namespace Bugwatch.Infrastructure.Services;
 
@@ -11,7 +12,8 @@ public class TicketHistoryService : ITicketHistoryService
     private readonly ITicketRepository _ticketRepository; // used to get old ticket by id
 
     public TicketHistoryService(ITicketHistoryRepository ticketHistoryRepository,
-        ITicketHistoryFactory ticketHistoryFactory, ITicketRepository ticketRepository)
+        ITicketHistoryFactory ticketHistoryFactory, ITicketRepository ticketRepository
+    )
     {
         _ticketHistoryRepository = ticketHistoryRepository;
         _ticketHistoryFactory = ticketHistoryFactory;
@@ -27,13 +29,8 @@ public class TicketHistoryService : ITicketHistoryService
     {
         var oldTicket = await _ticketRepository.GetByIdAsync(newTicket.Id);
 
-        if (oldTicket == null)
-        {
-            // New ticket created
-            await _ticketHistoryRepository.InsertAsync(CreateNewInstance(newTicket.Id));
-            return;
-        }
-        
+        if (oldTicket == null) return;
+
         ICollection<TicketHistory> ticketHistories = new List<TicketHistory>();
 
         if (oldTicket.Title != newTicket.Title)
@@ -41,8 +38,8 @@ public class TicketHistoryService : ITicketHistoryService
             ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
                 newTicket.Id,
                 TicketHistoryEvents.NewTitle,
-                oldTicket.Status,
-                newTicket.Status));
+                oldTicket.Title,
+                newTicket.Title));
         }
 
         if (oldTicket.Description != newTicket.Description)
@@ -50,8 +47,8 @@ public class TicketHistoryService : ITicketHistoryService
             ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
                 newTicket.Id,
                 TicketHistoryEvents.NewDescription,
-                oldTicket.Status,
-                newTicket.Status));
+                oldTicket.Description,
+                newTicket.Description));
         }
 
         if (oldTicket.Priority != newTicket.Priority)
@@ -59,8 +56,8 @@ public class TicketHistoryService : ITicketHistoryService
             ticketHistories.Add(_ticketHistoryFactory.CreateFromEvent(
                 newTicket.Id,
                 TicketHistoryEvents.NewPriority,
-                oldTicket.Status,
-                newTicket.Status));
+                oldTicket.Priority,
+                newTicket.Priority));
         }
 
         if (oldTicket.Status != newTicket.Status)

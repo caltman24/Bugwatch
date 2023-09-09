@@ -15,19 +15,31 @@ public class TicketHistoryRepository : ITicketHistoryRepository
         _dapperContext = dapperContext;
     }
 
-    // TODO: FIXME
     public async Task InsertManyAsync(IEnumerable<TicketHistory> ticketHistories, string authId)
     {
-        if (!ticketHistories.Any()) return;
-
         using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"INSERT INTO ticket_history (id, ticket_id, team_member_id, message, 
                                             event_name, old_value, new_value, 
                                             created_at, updated_at)
-                VALUES (@Id, @TicketId, @TeamMemberId, @Message, @EventName, @OldValue, @NewValue, @CreatedAt, @UpdatedAt);";
-
-        await conn.QueryAsync(sql, ticketHistories);
+                SELECT @Id, @TicketId, tm.id, @Message, @EventName, @OldValue, @NewValue, @CreatedAt, @UpdatedAt
+                FROM team_member tm
+                INNER JOIN ""user"" u on u.id = tm.user_id
+                WHERE u.auth_id = @authId";
+        
+        // OPTIMIZE
+        await conn.ExecuteAsync(sql, ticketHistories.Select(history => new
+        {
+            history.Id,
+            history.TicketId,
+            history.Message,
+            history.EventName,
+            history.OldValue,
+            history.NewValue,
+            history.CreatedAt,
+            history.UpdatedAt,
+            authId
+        }));
     }
 
     public async Task InsertAsync(TicketHistory ticketHistory)
@@ -39,7 +51,7 @@ public class TicketHistoryRepository : ITicketHistoryRepository
                                             created_at, updated_at)
                 VALUES (@Id, @TicketId, @TeamMemberId, @Message, @EventName, @OldValue, @NewValue, @CreatedAt, @UpdatedAt);";
 
-        await conn.QueryAsync(sql, new
+        await conn.ExecuteAsync(sql, new
         {
             ticketHistory.Id,
             ticketHistory.TicketId,

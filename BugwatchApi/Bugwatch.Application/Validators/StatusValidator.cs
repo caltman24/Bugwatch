@@ -21,7 +21,7 @@ public static class StatusValidator
     {
         if (value == null) return false;
 
-        // FIXME: Change type to ticketstatusconstants
+        // TODO: Change type to ticket status constants
         var fields =
             typeof(ProjectStatuses).GetFields(BindingFlags.Public | BindingFlags.Static |
                                               BindingFlags.FlattenHierarchy);

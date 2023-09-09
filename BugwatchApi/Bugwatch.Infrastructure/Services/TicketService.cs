@@ -27,4 +27,9 @@ public class TicketService : ITicketService
 
         await _ticketRepository.InsertAsync(newTicket, ticketHistory, authId);
     }
+
+    public async Task AssignDeveloperAsync(Guid ticketId, Guid developerId)
+    {
+        await _ticketRepository.UpdateDeveloperAsync(ticketId, developerId);
+    }
 }

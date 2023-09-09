@@ -6,4 +6,5 @@ public interface ITicketService
 {
     Task UpdateWithHistoryAsync(Guid ticketId, BasicTicket ticket, string authId);
     Task CreateWithHistoryAsync(BasicTicket newTicket, string authId);
+    Task AssignDeveloperAsync(Guid ticketId, Guid developerId);
 }

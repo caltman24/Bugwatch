@@ -5,31 +5,25 @@ namespace Bugwatch.Infrastructure.Factories;
 
 public static class TicketHistoryMessageFactory
 {
-    // TODO: Maybe remove timestamp from messages
-    public static string CreateMessageForEvent(string eventName, DateTime date, string? oldValue,
+    public static string CreateMessageForEvent(string eventName, string? oldValue,
         string? newValue)
     {
         return eventName switch
         {
-            TicketHistoryEvents.Created => $"Ticket created at {GetDateString(date)}",
+            TicketHistoryEvents.Created => $"Ticket created",
             TicketHistoryEvents.NewDev =>
-                $"Assigned developer changed from ${oldValue} to ${newValue} at {GetDateString(date)}",
+                $"Assigned developer changed from {oldValue} to {newValue}",
             TicketHistoryEvents.NewStatus =>
-                $"Ticket status changed from ${oldValue} to ${newValue} at {GetDateString(date)}",
+                $"Ticket status changed from {oldValue} to {newValue}",
             TicketHistoryEvents.NewType =>
-                $"Ticket type changed from ${oldValue} to ${newValue} at {GetDateString(date)}",
+                $"Ticket type changed from {oldValue} to {newValue}",
             TicketHistoryEvents.NewPriority =>
-                $"Ticket priority changed from ${oldValue} to ${newValue} at {GetDateString(date)}",
+                $"Ticket priority changed from {oldValue} to {newValue}",
             TicketHistoryEvents.NewDescription =>
-                $"Ticket description changed at {GetDateString(date)}",
+                $"Ticket description changed",
             TicketHistoryEvents.NewTitle =>
-                $"Ticket title changed from ${oldValue} to ${newValue} at {GetDateString(date)}",
+                $"Ticket title changed from {oldValue} to {newValue}",
             _ => throw new ArgumentOutOfRangeException(nameof(eventName), eventName, null)
         };
-    }
-
-    private static string GetDateString(DateTime date)
-    {
-        return date.ToString(CultureInfo.InvariantCulture);
     }
 }
