@@ -1,4 +1,3 @@
-using System.Diagnostics.Eventing.Reader;
 using Bugwatch.Api.Filters;
 using Bugwatch.Application.Constants;
 using Bugwatch.Application.Entities;
@@ -22,7 +21,7 @@ public static class TicketModule
 
     private static IEndpointRouteBuilder MapTicketGroup(this IEndpointRouteBuilder app)
     {
-        var ticketGroup = app.MapGroup("/tickets");
+        var ticketGroup = app.MapGroup("/tickets").WithTags("Tickets");
 
         ticketGroup.MapGet("/{ticketId:Guid}", async Task<Results<Ok<GetTicketRequest>, NotFound>> (
             Guid ticketId,
@@ -64,28 +63,29 @@ public static class TicketModule
         }).WithName("GetTicketById");
 
         ticketGroup.MapPost("/", async (
-            [FromQuery] string authId,
-            [FromBody] NewTicketRequest newTicketRequest,
-            ITicketService ticketService) =>
-        {
-            var newTicket = new BasicTicket
+                [FromQuery] string authId,
+                [FromBody] NewTicketRequest newTicketRequest,
+                ITicketService ticketService) =>
             {
-                Id = Guid.NewGuid(),
-                SubmitterId = newTicketRequest.SubmitterId,
-                DeveloperId = newTicketRequest.DeveloperId,
-                ProjectId = newTicketRequest.ProjectId,
-                Title = newTicketRequest.Title,
-                Description = newTicketRequest.Description,
-                Priority = newTicketRequest.Priority,
-                Status = newTicketRequest.Status,
-                Type = newTicketRequest.Type,
-                CreatedAt = DateTime.UtcNow
-            };
+                var newTicket = new BasicTicket
+                {
+                    Id = Guid.NewGuid(),
+                    SubmitterId = newTicketRequest.SubmitterId,
+                    DeveloperId = newTicketRequest.DeveloperId,
+                    ProjectId = newTicketRequest.ProjectId,
+                    Title = newTicketRequest.Title,
+                    Description = newTicketRequest.Description,
+                    Priority = newTicketRequest.Priority,
+                    Status = newTicketRequest.Status,
+                    Type = newTicketRequest.Type,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            await ticketService.CreateWithHistoryAsync(newTicket, authId);
+                await ticketService.CreateWithHistoryAsync(newTicket, authId);
 
-            return TypedResults.CreatedAtRoute(newTicket, "GetTicketById", new { ticketId = newTicket.Id });
-        }).AddEndpointFilter<TicketValidationFilter>().WithMemberRole(UserRoles.Admin, UserRoles.ProjectManager, UserRoles.Submitter);
+                return TypedResults.CreatedAtRoute(newTicket, "GetTicketById", new { ticketId = newTicket.Id });
+            }).AddEndpointFilter<TicketValidationFilter>()
+            .WithMemberRole(UserRoles.Admin, UserRoles.ProjectManager, UserRoles.Submitter);
 
         ticketGroup.MapPut("/{ticketId:Guid}", async (
             [FromQuery] string authId,
@@ -109,8 +109,8 @@ public static class TicketModule
             return TypedResults.NoContent();
         }).WithExistingUser().AddEndpointFilter<TicketValidationFilter>();
 
-        ticketGroup.MapPut("/assign/{ticketId:Guid}", async Task<Results<BadRequest<string>, NoContent>>(
-            [FromQuery]Guid developerId,
+        ticketGroup.MapPut("/assign/{ticketId:Guid}", async Task<Results<BadRequest<string>, NoContent>> (
+            [FromQuery] Guid developerId,
             Guid ticketId,
             ITeamMemberRepository teamMemberRepository,
             ITicketRepository ticketRepository) =>
@@ -140,7 +140,7 @@ public static class TicketModule
     // TODO: ticket comment routes
     private static IEndpointRouteBuilder MapTicketCommentGroup(this IEndpointRouteBuilder app)
     {
-        var commentGroup = app.MapGroup("/comments");
+        var commentGroup = app.MapGroup("/comments").WithTags("Comments");
         commentGroup.MapGet("/", () => TypedResults.Ok("Yayyy comment"));
         return app;
     }

@@ -10,7 +10,7 @@ public static class TeamModule
 {
     public static IEndpointRouteBuilder UseTeamModule(this IEndpointRouteBuilder app)
     {
-        var teamGroup = app.MapGroup("/team");
+        var teamGroup = app.MapGroup("/team").WithTags("Team");
 
         // authId will come from the bearer token in httpcontext
         // Possibly change authId to teamId

@@ -15,7 +15,9 @@ public static class ProjectModule
 {
     public static IEndpointRouteBuilder UseProjectModule(this IEndpointRouteBuilder app)
     {
-        var projectGroup = app.MapGroup("/projects").AddEndpointFilter<ProjectValidationFilter>();
+        var projectGroup = app.MapGroup("/projects")
+            .AddEndpointFilter<ProjectValidationFilter>()
+            .WithTags("Project");
 
         projectGroup.MapGet("/", async (
             IProjectRepository projectRepository,
