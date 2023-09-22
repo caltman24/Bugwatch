@@ -21,8 +21,8 @@ public static class DependencyInjection
 
         services.AddSingleton<DapperContext>();
 
-        services.AddSingleton<ITeamRepository, TeamRepository>()
-            .AddSingleton<ITeamMemberRepository, TeamMemberRepository>()
+        services.AddTransient<ITeamRepository, TeamRepository>()
+            .AddTransient<ITeamMemberRepository, TeamMemberRepository>()
             .AddProjectServices()
             .AddTicketServices();
 
@@ -31,11 +31,11 @@ public static class DependencyInjection
 
     private static IServiceCollection AddProjectServices(this IServiceCollection services)
     {
-        services.AddSingleton<IProjectRepository, ProjectRepository>()
-            .AddSingleton<IRoleProjectRepository, DeveloperProjectRepository>()
-            .AddSingleton<IRoleProjectRepository, ProjectManagerProjectRepository>();
+        services.AddTransient<IProjectRepository, ProjectRepository>()
+            .AddTransient<IRoleProjectRepository, DeveloperProjectRepository>()
+            .AddTransient<IRoleProjectRepository, ProjectManagerProjectRepository>();
 
-        services.AddSingleton<ProjectRepositoryResolver>(sp => role =>
+        services.AddTransient<ProjectRepositoryResolver>(sp => role =>
         {
             return (role switch
             {
@@ -50,17 +50,17 @@ public static class DependencyInjection
 
     private static IServiceCollection AddTicketServices(this IServiceCollection services)
     {
-        services.AddSingleton<ITicketRepository, TicketRepository>()
-            .AddSingleton<IRoleTicketRepository,DeveloperTicketRepository>()
-            .AddSingleton<IRoleTicketRepository, SubmitterTicketRepository>();
+        services.AddTransient<ITicketRepository, TicketRepository>()
+            .AddTransient<IRoleTicketRepository,DeveloperTicketRepository>()
+            .AddTransient<IRoleTicketRepository, SubmitterTicketRepository>();
 
-        services.AddSingleton<ITicketService, TicketService>();
+        services.AddTransient<ITicketService, TicketService>();
 
-        services.AddSingleton<ITicketHistoryRepository, TicketHistoryRepository>();
-        services.AddSingleton<ITicketHistoryService, TicketHistoryService>();
-        services.AddSingleton<ITicketHistoryFactory, TicketHistoryFactory>();
+        services.AddTransient<ITicketHistoryRepository, TicketHistoryRepository>();
+        services.AddTransient<ITicketHistoryService, TicketHistoryService>();
+        services.AddTransient<ITicketHistoryFactory, TicketHistoryFactory>();
 
-        services.AddSingleton<TicketRepositoryResolver>(sp => role =>
+        services.AddTransient<TicketRepositoryResolver>(sp => role =>
         {
             return (role switch
             {
