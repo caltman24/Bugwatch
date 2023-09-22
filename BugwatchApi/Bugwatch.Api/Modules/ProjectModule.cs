@@ -17,34 +17,26 @@ public static class ProjectModule
     {
         var projectGroup = app.MapGroup("/projects")
             .AddEndpointFilter<ProjectValidationFilter>()
-            .WithTags("Project");
-
-        projectGroup.MapGet("/", async (
-            IProjectRepository projectRepository,
-            [FromQuery] string authId) =>
-        {
-            var projects = await projectRepository.GetAllAsync(authId);
-
-            // We dont map from domain model to a contract because we already have just what we need
-            return TypedResults.Ok(projects);
-        });
+            .WithTags("Project")
+            .WithOpenApi();
 
         projectGroup.MapGet("/{projectId:guid}", async Task<Results<Ok<Project>, NotFound>> (
-            IProjectRepository projectRepository,
-            [FromRoute] Guid projectId) =>
-        {
-            var project = await projectRepository.GetByIdAsync(projectId);
+                IProjectRepository projectRepository,
+                [FromRoute] Guid projectId) =>
+            {
+                var project = await projectRepository.GetByIdAsync(projectId);
 
-            return project is null ? TypedResults.NotFound() : TypedResults.Ok(project);
-        }).WithName("GetProjectById");
+                return project is null ? TypedResults.NotFound() : TypedResults.Ok(project);
+            }).WithName("GetProjectById")
+            .WithDescription("Get project details and associated tickets");
 
         projectGroup.MapGet("/myprojects", async (
-            [FromQuery] string authId,
             HttpContext ctx,
             ProjectRepositoryResolver resolver
         ) =>
         {
             var role = ContextHelper.GetMemberRole(ctx);
+            var authId = ContextHelper.GetIdentityName(ctx)!;
 
             var projectRepository = resolver(role); // Developer Or PM ProjectRepository
 

@@ -1,4 +1,5 @@
-﻿using Bugwatch.Infrastructure.Repositories;
+﻿using Bugwatch.Api.Helpers;
+using Bugwatch.Infrastructure.Repositories;
 
 namespace Bugwatch.Api.Filters;
 
@@ -11,9 +12,7 @@ public static class TeamMemberRoleFilterExtensions
         {
             var teamMemberRepository = ctx.HttpContext.RequestServices.GetRequiredService<ITeamMemberRepository>();
 
-            // FIXME: For testing purposes only
-            var authId = ctx.GetArgument<string>(0);
-            // var authId = ctx.HttpContext.User.Identity?.Name!;
+            var authId = ContextHelper.GetIdentityName(ctx.HttpContext)!;
 
             var memberRole = await teamMemberRepository.GetRoleAsync(authId);
 

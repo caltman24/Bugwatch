@@ -1,4 +1,6 @@
-﻿using Bugwatch.Application.Entities;
+﻿using Bugwatch.Api.Filters;
+using Bugwatch.Api.Helpers;
+using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
 using Bugwatch.Contracts;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -12,13 +14,11 @@ public static class TeamModule
     {
         var teamGroup = app.MapGroup("/team").WithTags("Team");
 
-        // authId will come from the bearer token in httpcontext
-        // Possibly change authId to teamId
-        teamGroup.MapGet("/{authId}", async Task<Results<Ok<GetTeamResponse>, NotFound>> (
+        teamGroup.MapGet("/", async Task<Results<Ok<GetTeamResponse>, NotFound>> (
             ITeamRepository teamRepository,
-            HttpContext ctx,
-            [FromRoute] string authId) =>
+            HttpContext ctx) =>
         {
+            var authId = ContextHelper.GetIdentityName(ctx)!;
             var team = await teamRepository.GetByAuthIdAsync(authId);
 
             if (team == null) return TypedResults.NotFound();
@@ -49,6 +49,17 @@ public static class TeamModule
 
             return TypedResults.CreatedAtRoute(newTeam, "GetTeamById", new { authId = "" });
         });
+        
+        teamGroup.MapGet("/projects", async (
+            IProjectRepository projectRepository,
+            HttpContext ctx) =>
+        {
+            var authId = ContextHelper.GetIdentityName(ctx)!;
+            var projects = await projectRepository.GetAllAsync(authId);
+
+            // We dont map from domain model to a contract because we already have just what we need
+            return TypedResults.Ok(projects);
+        }).AddEndpointFilter<ProjectValidationFilter>();
 
         teamGroup.MapPut("/{teamId:Guid}", async (
             ITeamRepository teamRepository,

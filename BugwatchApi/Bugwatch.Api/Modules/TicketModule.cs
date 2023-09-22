@@ -64,8 +64,9 @@ public static class TicketModule
                 historyRequests.AsEnumerable()));
         }).WithName("GetTicketById");
 
+        // TODO: Remove submitterId from request. Get the submitterId in the query based off authId
         ticketGroup.MapPost("/", async (
-                [FromQuery] string authId,
+                HttpContext ctx,
                 [FromBody] NewTicketRequest newTicketRequest,
                 ITicketService ticketService) =>
             {
@@ -83,6 +84,8 @@ public static class TicketModule
                     CreatedAt = DateTime.UtcNow
                 };
 
+                var authId = ContextHelper.GetIdentityName(ctx)!;
+
                 await ticketService.CreateWithHistoryAsync(newTicket, authId);
 
                 return TypedResults.CreatedAtRoute(newTicket, "GetTicketById", new { ticketId = newTicket.Id });
@@ -90,7 +93,7 @@ public static class TicketModule
             .WithMemberRole(UserRoles.Admin, UserRoles.ProjectManager, UserRoles.Submitter);
 
         ticketGroup.MapPut("/{ticketId:Guid}", async (
-            [FromQuery] string authId,
+            HttpContext ctx,
             Guid ticketId,
             ITicketService ticketService,
             UpdateTicketRequest updateTicketRequest) =>
@@ -106,6 +109,7 @@ public static class TicketModule
                 DeveloperId = updateTicketRequest.DeveloperId
             };
 
+            var authId = ContextHelper.GetIdentityName(ctx)!;
             await ticketService.UpdateWithHistoryAsync(ticketId, updatedTicket, authId);
 
             return TypedResults.NoContent();
