@@ -12,7 +12,9 @@ public static class TeamModule
 {
     public static IEndpointRouteBuilder UseTeamModule(this IEndpointRouteBuilder app)
     {
-        var teamGroup = app.MapGroup("/team").WithTags("Team");
+        var teamGroup = app.MapGroup("/team")
+            .RequireAuthorization()
+            .WithTags("Team");
 
         teamGroup.MapGet("/", async Task<Results<Ok<GetTeamResponse>, NotFound>> (
             ITeamRepository teamRepository,
@@ -49,7 +51,7 @@ public static class TeamModule
 
             return TypedResults.CreatedAtRoute(newTeam, "GetTeamById", new { authId = "" });
         });
-        
+
         teamGroup.MapGet("/projects", async (
             IProjectRepository projectRepository,
             HttpContext ctx) =>

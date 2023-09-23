@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using Bugwatch.Api.Extensions;
+using Bugwatch.Api.Helpers;
 using Bugwatch.Api.Modules;
 using Bugwatch.Application;
 using Bugwatch.Infrastructure;
@@ -19,7 +21,7 @@ builder.Services.AddAuthorization(opts =>
 {
     opts.DefaultPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
-        .RequireClaim("sub")
+        .RequireClaim(ClaimTypes.NameIdentifier)
         .Build();
 });
 
@@ -39,6 +41,8 @@ if (app.Environment.IsDevelopment())
 app.UseProjectModule()
     .UseTeamModule()
     .UseTicketModule();
+
+app.MapGet("/test/authid", ContextHelper.GetIdentityName).RequireAuthorization();
 
 app.UseResponseCompression();
 app.Run();

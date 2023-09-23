@@ -16,6 +16,7 @@ public static class ProjectModule
     public static IEndpointRouteBuilder UseProjectModule(this IEndpointRouteBuilder app)
     {
         var projectGroup = app.MapGroup("/projects")
+            .RequireAuthorization()
             .AddEndpointFilter<ProjectValidationFilter>()
             .WithTags("Project")
             .WithOpenApi();

@@ -23,7 +23,9 @@ public static class TicketModule
 
     private static IEndpointRouteBuilder MapTicketGroup(this IEndpointRouteBuilder app)
     {
-        var ticketGroup = app.MapGroup("/tickets").WithTags("Tickets");
+        var ticketGroup = app.MapGroup("/tickets")
+            .WithTags("Tickets")
+            .RequireAuthorization();
 
         ticketGroup.MapGet("/{ticketId:Guid}", async Task<Results<Ok<GetTicketRequest>, NotFound>> (
             Guid ticketId,
