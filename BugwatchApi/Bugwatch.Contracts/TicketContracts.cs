@@ -17,7 +17,6 @@ public record GetTicketRequest(
     IEnumerable<GetTicketHistoryRequest> TicketHistory) : TicketRequest(Status, Priority, Type);
 
 public record NewTicketRequest(
-    Guid SubmitterId,
     Guid? DeveloperId,
     Guid ProjectId,
     string Title,

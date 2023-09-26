@@ -4,7 +4,6 @@ using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
 using Bugwatch.Contracts;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Bugwatch.Api.Modules;
 
