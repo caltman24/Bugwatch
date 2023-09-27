@@ -1,12 +1,14 @@
 using System.Reflection.Metadata;
 using Bugwatch.Api.Filters;
 using Bugwatch.Api.Helpers;
+using Bugwatch.Application;
 using Bugwatch.Application.Constants;
 using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
 using Bugwatch.Application.ValueObjects;
 using Bugwatch.Contracts;
 using Bugwatch.Infrastructure.Repositories;
+using Bugwatch.Infrastructure.Repositories.Projects;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -74,7 +76,7 @@ public static class TicketModule
             {
                 var authId = ContextHelper.GetIdentityName(ctx)!;
                 var memberInfo = await teamMemberRepository.GetInfoAsync(authId);
-                
+
                 var newTicket = new BasicTicket
                 {
                     Id = Guid.NewGuid(),
@@ -134,13 +136,23 @@ public static class TicketModule
         });
 
         // TODO: If role is project manager, check if the ticket is apart of their project
-        ticketGroup.MapDelete("/{ticketId:Guid}", async (
+        ticketGroup.MapDelete("/{ticketId:Guid}", async Task<Results<NoContent, ProblemHttpResult>> (
             Guid ticketId,
-            ITicketRepository ticketRepository) =>
+            HttpContext ctx,
+            ITicketRepository ticketRepository,
+            ProjectManagerProjectRepository projectRepository) =>
         {
-            await ticketRepository.DeleteAsync(ticketId);
+            var role = ContextHelper.GetMemberRole(ctx);
+            var authId = ContextHelper.GetIdentityName(ctx)!;
 
-            return TypedResults.NoContent();
+            if (role == UserRoles.Admin ||
+                await projectRepository.HasTicketToAssignedProjects(ticketId, authId))
+            {
+                await ticketRepository.DeleteAsync(ticketId);
+                return TypedResults.NoContent();
+            }
+
+            return TypedResults.Problem();
         }).WithMemberRole(UserRoles.Admin, UserRoles.ProjectManager);
 
         return ticketGroup;

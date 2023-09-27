@@ -17,6 +17,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();
 
 // TODO: REMOVE all authId queryStrings from all endpoints. Migrate to Authorization
+// TODO: Add custom domain errors as an HTTP Problem Response
 builder.Services.AddAuthorization(opts =>
 {
     opts.DefaultPolicy = new AuthorizationPolicyBuilder()

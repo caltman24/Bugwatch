@@ -30,4 +30,23 @@ public class ProjectManagerProjectRepository : IRoleProjectRepository
             WHERE u.auth_id = @authId",
             new { authId })).AsQueryable();
     }
+
+    public async Task<bool> HasTicketToAssignedProjects(Guid ticketId, string authId)
+    {
+        // TODO: Look this over. I rushed this
+        using var conn = _dapperContext.CreateConnection();
+
+        const string sql = @"
+                SELECT 1
+                FROM ticket t
+                LEFT JOIN project p on t.project_id = p.id
+                LEFT JOIN team_member tm on p.project_manager_id = tm.id
+                LEFT JOIN ""user"" u on tm.user_id = u.id
+                WHERE u.auth_id = @authId
+                AND t.id = @ticketId;";
+
+        var res = await conn.ExecuteScalarAsync<int>(sql, new { authId, ticketId});
+
+        return res is 1;
+    }
 }
