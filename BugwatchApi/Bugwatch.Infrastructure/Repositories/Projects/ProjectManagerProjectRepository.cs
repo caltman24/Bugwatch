@@ -39,9 +39,9 @@ public class ProjectManagerProjectRepository : IRoleProjectRepository
         const string sql = @"
                 SELECT 1
                 FROM ticket t
-                LEFT JOIN project p on t.project_id = p.id
-                LEFT JOIN team_member tm on p.project_manager_id = tm.id
-                LEFT JOIN ""user"" u on tm.user_id = u.id
+                INNER JOIN project p on t.project_id = p.id
+                INNER JOIN team_member tm on p.project_manager_id = tm.id
+                INNER JOIN ""user"" u on tm.user_id = u.id
                 WHERE u.auth_id = @authId
                 AND t.id = @ticketId;";
 
