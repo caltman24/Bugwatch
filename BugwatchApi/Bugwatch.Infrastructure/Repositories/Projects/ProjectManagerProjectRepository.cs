@@ -33,7 +33,6 @@ public class ProjectManagerProjectRepository : IRoleProjectRepository
 
     public async Task<bool> HasTicketToAssignedProjects(Guid ticketId, string authId)
     {
-        // TODO: Look this over. I rushed this
         using var conn = _dapperContext.CreateConnection();
 
         const string sql = @"

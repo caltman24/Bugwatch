@@ -12,7 +12,7 @@ public static class TeamMemberRoleFilterExtensions
         {
             var teamMemberRepository = ctx.HttpContext.RequestServices.GetRequiredService<ITeamMemberRepository>();
 
-            var authId = ContextHelper.GetIdentityName(ctx.HttpContext)!;
+            var authId = ContextHelper.GetNameIdentifier(ctx.HttpContext)!;
 
             var memberRole = await teamMemberRepository.GetRoleAsync(authId);
 

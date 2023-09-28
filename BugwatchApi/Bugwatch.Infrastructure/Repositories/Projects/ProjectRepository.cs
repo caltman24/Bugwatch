@@ -124,6 +124,30 @@ public class ProjectRepository : IProjectRepository
         });
     }
 
+    public async Task AssignProjectManagerAsync(Guid projectId, Guid projectMangerId)
+    {
+        using var conn = _dapperContext.CreateConnection();
+
+        const string sql = @"
+            UPDATE project
+            SET project_manager_id = @projectManagerId
+            WHERE project.id = @projectId;";
+
+        await conn.ExecuteAsync(sql, new { projectId });
+    }
+
+    public async Task UnassignProjectManagerAsync(Guid projectId)
+    {
+        using var conn = _dapperContext.CreateConnection();
+
+        const string sql = @"
+            UPDATE project
+            SET project_manager_id = null
+            WHERE project.id = @projectId;";
+
+        await conn.ExecuteAsync(sql, new { projectId });
+    }
+
     public async Task DeleteAsync(Guid projectId)
     {
         using var conn = _dapperContext.CreateConnection();

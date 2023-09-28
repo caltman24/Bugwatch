@@ -9,5 +9,7 @@ public interface IProjectRepository
     Task<Project?> GetByIdAsync(Guid projectId);
     Task InsertAsync(BasicProject project);
     Task UpdateAsync(Guid projectId, BasicProject updated);
+    Task AssignProjectManagerAsync(Guid projectId, Guid projectMangerId);
+    Task UnassignProjectManagerAsync(Guid projectId);
     Task DeleteAsync(Guid projectId);
 }

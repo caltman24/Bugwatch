@@ -16,7 +16,6 @@ builder.Services.AddApplication()
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer();
 
-// TODO: REMOVE all authId queryStrings from all endpoints. Migrate to Authorization
 // TODO: Add custom domain errors as an HTTP Problem Response
 builder.Services.AddAuthorization(opts =>
 {
@@ -41,9 +40,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseProjectModule()
     .UseTeamModule()
-    .UseTicketModule();
+    .UseTicketModule()
+    .UseAdminModule();
 
-app.MapGet("/test/authid", ContextHelper.GetIdentityName).RequireAuthorization();
+app.MapGet("/test/authid", ContextHelper.GetNameIdentifier).RequireAuthorization();
 
 app.UseResponseCompression();
 app.Run();

@@ -17,5 +17,5 @@ public static class ContextHelper
         return (string)role;
     }
 
-    public static string? GetIdentityName(HttpContext ctx) => ctx.User.Identity?.Name;
+    public static string? GetNameIdentifier(HttpContext ctx) => ctx.User.Identity?.Name;
 }

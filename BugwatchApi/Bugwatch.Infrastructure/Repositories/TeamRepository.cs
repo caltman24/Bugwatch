@@ -40,13 +40,21 @@ public class TeamRepository : ITeamRepository
         return await conn.QueryFirstOrDefaultAsync<Team>(sql, new { userId });
     }
 
-    public async Task InsertAsync(Team team)
+    public async Task InsertAsync(Team team, string authId)
     {
         using var conn = _dapperContext.CreateConnection();
+        
+        // TODO: Check if user is part of team. If so, return false
 
         const string sql = @"
             INSERT INTO team (id, creator_id, created_at, updated_at, name) 
-            VALUES (@Id, @CreatorId, @CreatedAt, @UpdatedAt, @Name);";
+            SELECT @Id, 
+                   u.id, 
+                   @CreatedAt, 
+                   @UpdatedAt, 
+                   @Name
+            FROM ""user"" u
+            WHERE u.auth_id = @authId";
 
         await conn.ExecuteAsync(sql, new
         {

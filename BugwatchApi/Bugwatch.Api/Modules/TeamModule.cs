@@ -1,5 +1,6 @@
 ﻿using Bugwatch.Api.Filters;
 using Bugwatch.Api.Helpers;
+using Bugwatch.Application.Constants;
 using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
 using Bugwatch.Contracts;
@@ -19,7 +20,7 @@ public static class TeamModule
             ITeamRepository teamRepository,
             HttpContext ctx) =>
         {
-            var authId = ContextHelper.GetIdentityName(ctx)!;
+            var authId = ContextHelper.GetNameIdentifier(ctx)!;
             var team = await teamRepository.GetByAuthIdAsync(authId);
 
             if (team == null) return TypedResults.NotFound();
@@ -34,52 +35,38 @@ public static class TeamModule
             return TypedResults.Ok(response);
         }).WithName("GetTeamById");
 
+        // TODO: Return error when user is already apart of a team
         teamGroup.MapPost("/", async (
+            HttpContext ctx,
             ITeamRepository teamRepository,
             NewTeamRequest newTeamRequest) =>
         {
+            var authId = ContextHelper.GetNameIdentifier(ctx)!;
+            
             var newTeam = new Team
             {
                 Id = Guid.NewGuid(),
                 Name = newTeamRequest.Name,
-                CreatorId = newTeamRequest.CreatorId,
                 CreatedAt = DateTime.UtcNow
             };
+            
+            // Try to insert if user is not in team
+            await teamRepository.InsertAsync(newTeam, authId);
 
-            await teamRepository.InsertAsync(newTeam);
-
-            return TypedResults.CreatedAtRoute(newTeam, "GetTeamById", new { authId = "" });
+            return TypedResults.CreatedAtRoute(newTeam, "GetTeamById", new { authId });
         });
 
         teamGroup.MapGet("/projects", async (
             IProjectRepository projectRepository,
             HttpContext ctx) =>
         {
-            var authId = ContextHelper.GetIdentityName(ctx)!;
+            var authId = ContextHelper.GetNameIdentifier(ctx)!;
             var projects = await projectRepository.GetAllAsync(authId);
 
             // We dont map from domain model to a contract because we already have just what we need
             return TypedResults.Ok(projects);
         }).AddEndpointFilter<ProjectValidationFilter>();
 
-        teamGroup.MapPut("/{teamId:Guid}", async (
-            ITeamRepository teamRepository,
-            Guid teamId,
-            UpdateTeamRequest updateTeamRequest) =>
-        {
-            await teamRepository.UpdateAsync(teamId, updateTeamRequest.Name);
-
-            return TypedResults.NoContent();
-        });
-
-        teamGroup.MapDelete("/{teamId:Guid}", async (
-            ITeamRepository teamRepository,
-            Guid teamId) =>
-        {
-            await teamRepository.DeleteAsync(teamId);
-
-            return TypedResults.NoContent();
-        });
 
         return app;
     }

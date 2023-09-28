@@ -37,7 +37,7 @@ public static class ProjectModule
         ) =>
         {
             var role = ContextHelper.GetMemberRole(ctx);
-            var authId = ContextHelper.GetIdentityName(ctx)!;
+            var authId = ContextHelper.GetNameIdentifier(ctx)!;
 
             var projectRepository = resolver(role); // Developer Or PM ProjectRepository
 
@@ -46,31 +46,6 @@ public static class ProjectModule
             return TypedResults.Ok(projects);
         }).WithMemberRole(UserRoles.Developer, UserRoles.ProjectManager);
 
-        projectGroup.MapPost("/", async (
-            [FromBody] NewProjectRequest newProjectResponse,
-            IProjectRepository projectRepository,
-            [FromQuery] Guid teamId) =>
-        {
-            var newProject = new BasicProject
-            {
-                Id = Guid.NewGuid(),
-                Title = newProjectResponse.Title,
-                Description = newProjectResponse.Description,
-                TeamId = teamId,
-                CreatedAt = DateTime.UtcNow,
-                Priority = newProjectResponse.Priority,
-                Status = newProjectResponse.Status,
-                ProjectManagerId = newProjectResponse.ProjectManagerId,
-                Deadline = newProjectResponse.Deadline
-            };
-
-            await projectRepository.InsertAsync(newProject);
-
-            return TypedResults.CreatedAtRoute(
-                newProject,
-                "GetProjectById",
-                new { projectId = newProject.Id });
-        }).WithMemberRole(UserRoles.Admin);
 
         projectGroup.MapPut("/{projectId:guid}", async (
             IProjectRepository projectRepository,
@@ -91,17 +66,6 @@ public static class ProjectModule
             return TypedResults.NoContent();
         }).WithMemberRole(UserRoles.ProjectManager, UserRoles.Admin);
 
-        // TODO: Update project status
-        // TODO: Assign Project Manager
-
-        projectGroup.MapDelete("/{projectId:Guid}", async (
-            IProjectRepository projectRepository,
-            [FromRoute] Guid projectId) =>
-        {
-            await projectRepository.DeleteAsync(projectId);
-
-            return TypedResults.NoContent();
-        }).WithMemberRole(UserRoles.Admin);
 
         return app;
     }

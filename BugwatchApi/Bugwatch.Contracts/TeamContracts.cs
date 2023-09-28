@@ -1,6 +1,6 @@
 ﻿namespace Bugwatch.Contracts;
 
-public record NewTeamRequest(string Name, Guid CreatorId);
+public record NewTeamRequest(string Name);
 
 public record UpdateTeamRequest(string Name);
 

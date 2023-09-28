@@ -74,7 +74,7 @@ public static class TicketModule
                 ITeamMemberRepository teamMemberRepository,
                 ITicketService ticketService) =>
             {
-                var authId = ContextHelper.GetIdentityName(ctx)!;
+                var authId = ContextHelper.GetNameIdentifier(ctx)!;
                 var memberInfo = await teamMemberRepository.GetInfoAsync(authId);
 
                 var newTicket = new BasicTicket
@@ -114,7 +114,7 @@ public static class TicketModule
                 DeveloperId = updateTicketRequest.DeveloperId
             };
 
-            var authId = ContextHelper.GetIdentityName(ctx)!;
+            var authId = ContextHelper.GetNameIdentifier(ctx)!;
             await ticketService.UpdateWithHistoryAsync(ticketId, updatedTicket, authId);
 
             return TypedResults.NoContent();
@@ -135,15 +135,14 @@ public static class TicketModule
             return TypedResults.NoContent();
         });
 
-        // TODO: If role is project manager, check if the ticket is apart of their project
-        ticketGroup.MapDelete("/{ticketId:Guid}", async Task<Results<NoContent, ProblemHttpResult>> (
+        ticketGroup.MapDelete("/{ticketId:Guid}", async Task<Results<NoContent, ForbidHttpResult>> (
             Guid ticketId,
             HttpContext ctx,
             ITicketRepository ticketRepository,
-            ProjectManagerProjectRepository projectRepository) =>
+            [FromServices] ProjectManagerProjectRepository projectRepository) =>
         {
             var role = ContextHelper.GetMemberRole(ctx);
-            var authId = ContextHelper.GetIdentityName(ctx)!;
+            var authId = ContextHelper.GetNameIdentifier(ctx)!;
 
             if (role == UserRoles.Admin ||
                 await projectRepository.HasTicketToAssignedProjects(ticketId, authId))
@@ -152,7 +151,7 @@ public static class TicketModule
                 return TypedResults.NoContent();
             }
 
-            return TypedResults.Problem();
+            return TypedResults.Forbid();
         }).WithMemberRole(UserRoles.Admin, UserRoles.ProjectManager);
 
         return ticketGroup;
