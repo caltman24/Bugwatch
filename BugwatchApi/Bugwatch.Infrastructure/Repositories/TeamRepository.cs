@@ -1,4 +1,5 @@
-﻿using Bugwatch.Application.Entities;
+﻿using System.Data;
+using Bugwatch.Application.Entities;
 using Bugwatch.Application.Interfaces;
 using Bugwatch.Infrastructure.Context;
 using Dapper;
@@ -40,11 +41,13 @@ public class TeamRepository : ITeamRepository
         return await conn.QueryFirstOrDefaultAsync<Team>(sql, new { userId });
     }
 
-    public async Task InsertAsync(Team team, string authId)
+    public async Task<bool> InsertAsync(Team team, string authId)
     {
         using var conn = _dapperContext.CreateConnection();
-        
-        // TODO: Check if user is part of team. If so, return false
+
+        var partOfTeam = await UserIsTeamMember(authId, conn);
+
+        if (partOfTeam) return false;
 
         const string sql = @"
             INSERT INTO team (id, creator_id, created_at, updated_at, name) 
@@ -64,6 +67,8 @@ public class TeamRepository : ITeamRepository
             team.UpdatedAt,
             team.Name
         });
+
+        return true;
     }
 
     public async Task UpdateAsync(Guid teamId, string name)
@@ -90,5 +95,17 @@ public class TeamRepository : ITeamRepository
         const string sql = @"DELETE from team t WHERE t.id = @teamId;";
 
         await conn.ExecuteAsync(sql, new { teamId });
+    }
+
+    private async Task<bool> UserIsTeamMember(string authId, IDbConnection connection)
+    {
+        const string sql = @"
+            SELECT 1 FROM team_member tm 
+            INNER JOIN ""user"" u on u.id = tm.user_id
+            WHERE u.auth_id = @authId;";
+        
+        var res = await connection.ExecuteScalarAsync<int>(sql, new { authId });
+
+        return res == 1;
     }
 }

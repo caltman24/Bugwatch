@@ -35,23 +35,27 @@ public static class TeamModule
             return TypedResults.Ok(response);
         }).WithName("GetTeamById");
 
-        // TODO: Return error when user is already apart of a team
-        teamGroup.MapPost("/", async (
+        teamGroup.MapPost("/", async Task<Results<CreatedAtRoute<Team>, ProblemHttpResult>> (
             HttpContext ctx,
             ITeamRepository teamRepository,
             NewTeamRequest newTeamRequest) =>
         {
             var authId = ContextHelper.GetNameIdentifier(ctx)!;
-            
+
             var newTeam = new Team
             {
                 Id = Guid.NewGuid(),
                 Name = newTeamRequest.Name,
                 CreatedAt = DateTime.UtcNow
             };
-            
-            // Try to insert if user is not in team
-            await teamRepository.InsertAsync(newTeam, authId);
+
+            var success = await teamRepository.InsertAsync(newTeam, authId);
+
+            if (!success)
+            {
+                return TypedResults.Problem(statusCode: StatusCodes.Status409Conflict,
+                    detail: "Team member is already apart of a team", title: "Team member exists");
+            }
 
             return TypedResults.CreatedAtRoute(newTeam, "GetTeamById", new { authId });
         });
